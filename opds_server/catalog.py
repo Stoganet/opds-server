@@ -17,6 +17,11 @@ EXT_CONTENT_TYPES = {
     ".png": "image/png",
 }
 
+CONTENT_TYPE_EXTENSIONS = {
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+}
+
 
 @dataclass(frozen=True)
 class Book:

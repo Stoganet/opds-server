@@ -26,6 +26,7 @@ def create_app(books_root: Path | None = None) -> Flask:
         return Response(xml, mimetype=FEED_TYPE)
 
     @app.get("/covers/<path:book_id>.jpg")
+    @app.get("/covers/<path:book_id>.png")
     def cover(book_id: str) -> Response:
         root = app.config["BOOKS_ROOT"]
         epub_path = resolve_id(root, book_id)

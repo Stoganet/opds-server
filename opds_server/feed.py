@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from xml.etree import ElementTree as ET
 
-from .catalog import Book, find_cover
+from .catalog import Book, CONTENT_TYPE_EXTENSIONS, find_cover
 
 ATOM_NS = "http://www.w3.org/2005/Atom"
 OPDS_NS = "http://opds-spec.org/2010/catalog"
@@ -53,7 +53,8 @@ def _add_entry(feed: ET.Element, book: Book, base_url: str) -> None:
     cover = find_cover(book.path)
     if cover is not None:
         _, content_type = cover
+        ext = CONTENT_TYPE_EXTENSIONS[content_type]
         thumbnail = ET.SubElement(entry, f"{{{ATOM_NS}}}link")
         thumbnail.set("rel", "http://opds-spec.org/image/thumbnail")
-        thumbnail.set("href", f"{base_url}/covers/{book.id}.jpg")
+        thumbnail.set("href", f"{base_url}/covers/{book.id}{ext}")
         thumbnail.set("type", content_type)

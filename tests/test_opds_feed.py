@@ -5,6 +5,7 @@ ATOM_NS = "{http://www.w3.org/2005/Atom}"
 
 HAS_COVER_REL = "Jane Author/Has Cover Book/Has Cover Book - Jane Author.epub"
 NO_COVER_REL = "John Writer/No Cover Book/No Cover Book - John Writer.epub"
+PNG_COVER_REL = "Pat Author/PNG Cover Book/PNG Cover Book - Pat Author.epub"
 
 
 def test_lists_exactly_the_epub_fixtures(client):
@@ -12,7 +13,7 @@ def test_lists_exactly_the_epub_fixtures(client):
     root = ET.fromstring(resp.data)
     entries = root.findall(f"{ATOM_NS}entry")
     titles = {e.find(f"{ATOM_NS}title").text for e in entries}
-    assert titles == {"Has Cover Book", "No Cover Book", "Corrupt Book"}
+    assert titles == {"Has Cover Book", "No Cover Book", "Corrupt Book", "PNG Cover Book"}
 
 
 def test_title_and_author_from_folder_names(client):
@@ -54,7 +55,7 @@ def test_feed_is_well_formed_with_opds_namespace(client):
     acquisition_links = root.findall(
         f".//{ATOM_NS}entry/{ATOM_NS}link[@rel='http://opds-spec.org/acquisition']"
     )
-    assert len(acquisition_links) == 3
+    assert len(acquisition_links) == 4
     for link in acquisition_links:
         assert link.get("type") == "application/epub+zip"
 
@@ -69,6 +70,34 @@ def test_cover_returns_exact_embedded_bytes(client, books_root):
 
     with zipfile.ZipFile(books_root / HAS_COVER_REL) as zf:
         expected = zf.read("OEBPS/cover.jpg")
+    assert resp.data == expected
+
+
+def test_png_cover_thumbnail_link_uses_png_extension(client):
+    resp = client.get("/opds")
+    root = ET.fromstring(resp.data)
+    entries = root.findall(f"{ATOM_NS}entry")
+    by_title = {e.find(f"{ATOM_NS}title").text: e for e in entries}
+
+    thumbnail = [
+        link
+        for link in by_title["PNG Cover Book"].findall(f"{ATOM_NS}link")
+        if link.get("rel") == "http://opds-spec.org/image/thumbnail"
+    ][0]
+    assert thumbnail.get("href").endswith(".png")
+    assert thumbnail.get("type") == "image/png"
+
+
+def test_png_cover_returns_exact_embedded_bytes(client, books_root):
+    epub_id = quote(PNG_COVER_REL)
+    resp = client.get(f"/covers/{epub_id}.png")
+    assert resp.status_code == 200
+    assert resp.mimetype == "image/png"
+
+    import zipfile
+
+    with zipfile.ZipFile(books_root / PNG_COVER_REL) as zf:
+        expected = zf.read("OEBPS/cover.png")
     assert resp.data == expected
 
 
