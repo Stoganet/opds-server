@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from flask import Flask, Response, abort, request
+from flask import Flask, Response, abort, request, send_file
 
 from .catalog import find_cover, iter_books, resolve_id
 from .feed import FEED_TYPE, build_feed
@@ -40,17 +40,18 @@ def create_app(books_root: Path | None = None) -> Flask:
         return Response(image_bytes, mimetype=content_type)
 
     @app.get("/books/<path:book_id>")
-    def download(book_id: str) -> Response:
+    def download(book_id: str):
         root = app.config["BOOKS_ROOT"]
         epub_path = resolve_id(root, book_id)
         if epub_path is None:
             abort(404)
 
-        data = epub_path.read_bytes()
-        response = Response(data, mimetype="application/epub+zip")
-        response.headers["Content-Disposition"] = (
-            f'attachment; filename="{epub_path.name}"'
+        return send_file(
+            epub_path,
+            mimetype="application/epub+zip",
+            as_attachment=True,
+            download_name=epub_path.name,
+            conditional=True,
         )
-        return response
 
     return app
