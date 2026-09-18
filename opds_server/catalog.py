@@ -104,8 +104,21 @@ def find_cover(epub_path: Path) -> tuple[bytes, str] | None:
     return image_bytes, content_type
 
 
+def _parse_xml(data: bytes) -> ET.Element:
+    """Parse XML while rejecting any DOCTYPE, to block entity-expansion attacks.
+
+    Neither container.xml nor an OPF manifest legitimately declares a
+    DOCTYPE, so refusing one outright closes off billion-laughs-style
+    payloads (their entity definitions live inside the DOCTYPE block)
+    without needing a third-party XML-hardening library.
+    """
+    if b"<!DOCTYPE" in data:
+        raise ET.ParseError("DOCTYPE declarations are not allowed")
+    return ET.fromstring(data)
+
+
 def _read_opf(zf: zipfile.ZipFile) -> tuple[Path, ET.Element | None]:
-    container = ET.fromstring(zf.read("META-INF/container.xml"))
+    container = _parse_xml(zf.read("META-INF/container.xml"))
     rootfile = container.find(".//cn:rootfile", CONTAINER_NS)
     if rootfile is None:
         return Path(""), None
@@ -114,7 +127,7 @@ def _read_opf(zf: zipfile.ZipFile) -> tuple[Path, ET.Element | None]:
     if not opf_full_path:
         return Path(""), None
 
-    opf_root = ET.fromstring(zf.read(opf_full_path))
+    opf_root = _parse_xml(zf.read(opf_full_path))
     return Path(opf_full_path), opf_root
 
 
