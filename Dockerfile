@@ -13,5 +13,5 @@ EXPOSE 8082
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8082/opds')" || exit 1
 
-CMD ["gunicorn", "--factory", "--bind", "0.0.0.0:8082", "opds_server.app:create_app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8082", "opds_server.app:create_app()"]
 
