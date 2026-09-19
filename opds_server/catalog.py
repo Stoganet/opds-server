@@ -96,7 +96,10 @@ def find_cover(epub_path: Path) -> tuple[bytes, str] | None:
             if href is None:
                 return None
 
-            image_path = (opf_path.parent / href).as_posix() if opf_path.parent != Path(".") else href
+            if opf_path.parent != Path("."):
+                image_path = (opf_path.parent / href).as_posix()
+            else:
+                image_path = href
             image_bytes = zf.read(image_path)
     except (KeyError, zipfile.BadZipFile, ET.ParseError, OSError):
         return None

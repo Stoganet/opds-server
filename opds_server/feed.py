@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from xml.etree import ElementTree as ET
 
-from .catalog import Book, CONTENT_TYPE_EXTENSIONS, find_cover
+from .catalog import CONTENT_TYPE_EXTENSIONS, Book, find_cover
 
 ATOM_NS = "http://www.w3.org/2005/Atom"
 OPDS_NS = "http://opds-spec.org/2010/catalog"
