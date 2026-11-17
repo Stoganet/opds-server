@@ -3,6 +3,12 @@ name: deploy
 on:
   push:
     branches: [main]
+    paths:
+      - "opds_server/**"
+      - "Dockerfile"
+      - ".dockerignore"
+      - "pyproject.toml"
+      - "README.md"
   workflow_dispatch:
     inputs:
       ref:
