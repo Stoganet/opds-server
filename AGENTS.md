@@ -57,7 +57,7 @@ repo's `AGENTS.md` for the invariants around port binding and no WAN exposure.
 
 ## Code review
 
-`claude-code-review.yml` reads this file before reviewing a PR. Any violation of an
+CodeRabbit reads this file before reviewing a PR. Any violation of an
 Architecture invariant above is Important. Everything else — style, naming, refactoring —
 is Nit at most; cap at five per review, say "plus N similar items" if there are more.
 
